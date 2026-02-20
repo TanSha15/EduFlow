@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
+import { toast } from "react-hot-toast"; // Added import
 
 const AuthContext = createContext();
 
@@ -30,9 +31,8 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post("/auth/login", { email, password });
       setUser(res.data.user);
       setIsAuthenticated(true);
-      return res.data; // Return data so the component can handle success
+      return res.data;
     } catch (error) {
-      // Throw error so the Login page can show an alert/toast
       throw error.response?.data?.message || "Login failed";
     }
   };
@@ -48,29 +48,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout cleanup failed", error);
+    } finally {
+      // Always clear state and redirect regardless of API success
+      setUser(null);
+      setIsAuthenticated(false);
+      
 
-const logout = async () => {
-        try {
-
-            await api.post("/auth/logout");
-            
-
-            setUser(null);
-            setIsAuthenticated(false);
-            
-            navigate("/login");
-            
-            toast.success("Logged out successfully");
-        } catch (error) {
-            setUser(null);
-            setIsAuthenticated(false);
-            navigate("/login");
-        }
-    };
+      window.location.href = "/login";
+      toast.success("Logged out successfully");
+    }
+  };
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isCheckingAuth, login, signup, logout }}
+      value={{ user, isAuthenticated, isCheckingAuth, login, signup, logout, checkAuth }}
     >
       {children}
     </AuthContext.Provider>

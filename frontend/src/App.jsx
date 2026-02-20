@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
@@ -13,16 +13,23 @@ import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 
+// Protected Route Wrapper for cleaner code
+const ProtectedRoute = ({ children, isAuthenticated }) => {
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+// Public Route Wrapper (Prevents logged-in users from seeing Login/Signup)
+const PublicRoute = ({ children, isAuthenticated }) => {
+  return !isAuthenticated ? children : <Navigate to="/" replace />;
+};
+
 function App() {
   const { isAuthenticated, isCheckingAuth } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Toggle for mobile menu
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  // Function to close sidebar
   const closeSidebar = () => setIsSidebarOpen(false);
 
-  // 1. Full-screen Dark Loading State
   if (isCheckingAuth) {
     return (
       <div className="h-screen w-full bg-[#0f172a] flex flex-col justify-center items-center">
@@ -34,47 +41,44 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* 2. Root Container: Edge-to-edge dark background */}
-      <div className="min-h-screen w-full bg-[#0f172a] flex flex-col overflow-x-hidden m-0 p-0 text-slate-200">
+      <div className="min-h-screen w-full bg-[#0f172a] flex flex-col text-slate-200 overflow-x-hidden">
         
-        {/* Navbar: Only fixed/sticky if needed, otherwise stays in flow */}
         {isAuthenticated && (
           <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         )}
 
-        {/* 3. Layout Wrapper: Flex container for Sidebar + Main */}
         <div className="flex flex-1 w-full relative">
-          
-          {/* Sidebar */}
           {isAuthenticated && (
             <Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} />
           )}
 
-          {/* 4. Main Area: Controlled margin to prevent shrinking/overlapping */}
           <main 
             className={`flex-1 w-full transition-all duration-300 ease-in-out ${
-              isAuthenticated && isSidebarOpen && window.innerWidth > 768 
-                ? "md:ml-[240px]" 
-                : "ml-0"
+              isAuthenticated && isSidebarOpen ? "lg:pl-[240px]" : "pl-0"
             }`}
           >
-            {/* 5. Content Container: Prevents the "ugly" squeezed look on large screens */}
             <div className="max-w-7xl mx-auto p-4 md:p-8 min-h-full">
               <Routes>
-                <Route path="/" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+                {/* Protected Routes */}
+                <Route path="/" element={<ProtectedRoute isAuthenticated={isAuthenticated}><Dashboard /></ProtectedRoute>} />
+                <Route path="/contact" element={<ProtectedRoute isAuthenticated={isAuthenticated}><Contact /></ProtectedRoute>} />
+                
+                {/* Semi-Protected / Public */}
                 <Route path="/about" element={<About />} />
                 <Route path="/faq" element={<FAQ />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/" />} />
-                <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
-                <Route path="*" element={<Navigate to="/" />} />
+
+                {/* Auth Routes */}
+                <Route path="/signup" element={<PublicRoute isAuthenticated={isAuthenticated}><Signup /></PublicRoute>} />
+                <Route path="/login" element={<PublicRoute isAuthenticated={isAuthenticated}><Login /></PublicRoute>} />
+                
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
               </Routes>
             </div>
           </main>
         </div>
       </div>
 
-      {/* Themed Toaster for Dark Mode */}
       <Toaster 
         position="top-center" 
         toastOptions={{
