@@ -17,19 +17,22 @@ export const generateTokens = async(res, userId) => {
 
     await User.findByIdAndUpdate(userId, { refreshToken });
 
+    // Set Access Token
     res.cookie('accessToken', accessToken, {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
-        sameSite: 'strict', 
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        // FIX: Changed 'strict' to 'none' for cross-domain production support
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+        maxAge: 15 * 60 * 1000 
     });
 
-    //Set Refresh Token in http-only cookie
+    // Set Refresh Token
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
-        sameSite: 'strict', 
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        // FIX: Changed 'strict' to 'none' for cross-domain production support
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+        maxAge: 7 * 24 * 60 * 60 * 1000 
     });
 
     return accessToken;
