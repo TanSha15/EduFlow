@@ -210,7 +210,7 @@ BANNED BEHAVIORS:
       content: text,
     });
 
-    //  STREAK LOGIC ---
+    // --- STEP 4: STREAK LOGIC ---
     const user = await User.findById(userId);
     if (user) {
       const now = new Date();
@@ -241,5 +241,43 @@ BANNED BEHAVIORS:
       message: "An error occurred while generating study material.",
       error: error.message,
     });
+  }
+};
+
+/**
+ * @desc    Get all study history for the logged-in user
+ */
+export const getStudyHistory = async (req, res) => {
+  try {
+    const history = await StudyMaterial.find({ userId: req.id }).sort({
+      createdAt: -1,
+    });
+    return res.status(200).json({ success: true, data: history });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to retrieve history." });
+  }
+};
+
+/**
+ * @desc    Delete specific study material
+ */
+export const deleteStudyMaterial = async (req, res) => {
+  try {
+    const material = await StudyMaterial.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.id,
+    });
+    
+    if (!material) {
+      return res.status(404).json({ success: false, message: "Material not found." });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Delete failed." });
   }
 };
