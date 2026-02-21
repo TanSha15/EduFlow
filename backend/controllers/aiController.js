@@ -19,154 +19,190 @@ export const generateStudyMaterial = async (req, res) => {
       });
     }
 
-    // --- STEP 1: DYNAMIC PROMPT LOGIC ---
-    // --- STEP 1: DYNAMIC PROMPT LOGIC ---
+
     let typeSpecificPrompt = "";
 
+    // --- STEP 1: DYNAMIC PROMPT LOGIC ---
     if (type === "quiz") {
       typeSpecificPrompt = `
-TASK: Generate a high-quality Multiple Choice Quiz.
+TASK: Generate exactly 5 Multiple Choice Quiz questions on the topic: "${topic}".
 
-CRITICAL RENDERING RULES (STRICT — INVALID IF BROKEN):
+OUTPUT RULES — VIOLATIONS WILL BREAK THE RENDERER:
+- Begin your response with "## Quiz: ${topic}" and NOTHING before it.
+- No preamble, no meta-commentary, no "Here is your quiz", no closing remarks.
+- Output ONLY the quiz block, then the answer key. Nothing else.
+- Never place explanations, hints, or correct-answer signals inside the quiz section.
 
-1. Every question block MUST match the template EXACTLY.
-2. Each option MUST be on its own separate line.
-3. There MUST be one blank line after the question.
-4. There MUST be one blank line after option D.
-5. NEVER place options on the same line as the question.
-6. NEVER place multiple options on one line.
-7. NEVER compress text into paragraphs.
-8. Use the separator exactly as written.
+QUESTION RULES:
+- Questions must progress in difficulty: Q1–2 = beginner, Q3–4 = intermediate, Q5 = advanced.
+- All 5 questions must be on distinct subtopics. No duplicate concepts.
+- Each question must have exactly 4 options: A, B, C, D.
+- Exactly one option must be correct. No trick questions where multiple are correct.
+- Distractors (wrong options) must be plausible — not obviously wrong.
+- Do not use "All of the above" or "None of the above".
 
-REQUIRED TEMPLATE (REPEAT EXACTLY 5 TIMES):
+EXACT TEMPLATE — REPEAT THIS BLOCK 5 TIMES, NO DEVIATION:
 
-1. Question text here?
+[number]. [Question text ending in ?]
 
-A. Option A text
-B. Option B text
-C. Option C text
-D. Option D text
+A. [Option text]
+B. [Option text]
+C. [Option text]
+D. [Option text]
 
 --------------------------------------------------
 
-(Repeat for questions 2–5)
+ANSWER KEY RULES:
+- Begin with "## Answer Key" on its own line.
+- One answer per line, vertical only.
+- Each line: number, correct letter, em dash, one sentence explanation.
+- Explanation must state WHY the answer is correct, not just restate it.
 
-STRUCTURE:
+EXACT ANSWER KEY TEMPLATE:
 
-## Quiz: ${topic}
+1. [Letter] — [One sentence explaining why this is correct.]
+2. [Letter] — [One sentence explaining why this is correct.]
+3. [Letter] — [One sentence explaining why this is correct.]
+4. [Letter] — [One sentence explaining why this is correct.]
+5. [Letter] — [One sentence explaining why this is correct.]
 
-(Follow template exactly)
-
-## Answer Key
-
-Write answers vertically using this exact format:
-
-1. B — One sentence explanation.
-
-2. A — One sentence explanation.
-
-3. D — One sentence explanation.
-
-4. C — One sentence explanation.
-
-5. B — One sentence explanation.
-
-DO NOT:
-- Write explanations inside quiz
-- Merge lines
-- Remove blank lines
-- Change separator
+BANNED BEHAVIORS:
+- Do not add blank lines inside the answer key.
+- Do not add section headers between questions.
+- Do not number options (1. 2. 3.) — use only A. B. C. D.
+- Do not bold or italicize any quiz content.
+- Do not add a closing summary or note after the answer key.
 `;
     } else if (type === "roadmap") {
       typeSpecificPrompt = `
-TASK: Generate a Step-by-Step Learning Roadmap.
+TASK: Generate a structured Step-by-Step Learning Roadmap for: "${topic}".
 
-STRICT FORMAT RULES:
-- Each phase must contain 4–6 bullet points.
-- Bullet points must start with "- ".
-- Avoid paragraphs. Only structured learning steps.
+OUTPUT RULES:
+- Begin your response with "## Roadmap: ${topic}" and NOTHING before it.
+- No preamble, no "Here is your roadmap", no closing remarks or motivational fluff.
+- Use only structured bullet points. No prose paragraphs anywhere in the output.
+- Every bullet point must be an actionable learning step, not a vague category name.
+  BAD:  "- Fundamentals"
+  GOOD: "- Learn the core syntax rules and understand how the compiler/interpreter processes code"
 
-STRUCTURE:
+PHASE RULES:
+- Each phase must have a title and a 1-sentence description of what the learner achieves by the end.
+- Each phase must contain exactly 5 bullet points.
+- Bullets must start with "- " (dash + space).
+- Each bullet must be 10–20 words: specific enough to act on, not so long it becomes a paragraph.
+- No sub-bullets. Flat list only.
 
-## Roadmap: Mastering ${topic}
+EXACT STRUCTURE:
+
+## Roadmap: ${topic}
 
 ### Phase 1: Foundations
-- Core fundamentals
-- Essential theory
-- Basic practice exercises
-- Beginner tools
+*Goal: [One sentence — what the learner can do after this phase.]*
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
 
 ### Phase 2: Intermediate Depth
-- Applied concepts
-- Common patterns
-- Practical implementation
-- Debugging skills
+*Goal: [One sentence — what the learner can do after this phase.]*
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
 
 ### Phase 3: Advanced Mastery
-- Real-world projects
-- Optimization techniques
-- Edge cases
-- Professional practices
+*Goal: [One sentence — what the learner can do after this phase.]*
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
+- [Actionable learning step]
 
 ## Checkpoints
-List 5 measurable milestones demonstrating competence.
+
+*Each checkpoint is a concrete, testable proof of competence.*
+
+1. [Specific deliverable or skill test that proves Phase 1 completion.]
+2. [Specific deliverable or skill test that proves growing competence.]
+3. [Project or task demonstrating intermediate ability.]
+4. [Challenge that requires combining multiple skills learned.]
+5. [Capstone task that demonstrates near-professional proficiency.]
+
+BANNED BEHAVIORS:
+- Do not write motivational statements ("You're on your way!", "Keep it up!").
+- Do not use vague bullets like "Understand the basics" or "Practice more".
+- Do not add resources, links, or tool recommendations unless the topic requires it.
+- Do not add a closing paragraph after the checkpoints.
 `;
     } else {
       typeSpecificPrompt = `
-TASK: Generate a comprehensive Study Guide.
+TASK: Generate a structured Study Guide for: "${topic}".
 
-STRICT FORMAT RULES:
-- No conversational sentences.
-- Use concise academic explanations.
-- Use bullet lists where appropriate.
+OUTPUT RULES:
+- Begin your response with "## Study Guide: ${topic}" and NOTHING before it.
+- No preamble, no "Here is your study guide", no closing remarks.
+- Use academic, precise language throughout. No conversational filler.
+- Every section must appear in the exact order listed below.
+- Do not merge sections or skip sections.
 
-STRUCTURE:
+SECTION RULES:
 
-## Overview
-A concise academic summary of the topic (5–6 sentences).
+### Overview
+- Write exactly 5 sentences.
+- Sentence 1: Define the topic.
+- Sentence 2: Explain its significance or real-world relevance.
+- Sentence 3: Describe its scope (what it covers / what it doesn't).
+- Sentence 4: Name the primary discipline(s) it belongs to.
+- Sentence 5: State what a learner will understand after studying it.
+- No bullet points in this section. Prose only.
 
-## Core Concepts
-Explain 3–5 essential concepts using subsections:
+### Core Concepts
+- Include exactly 4 concepts.
+- Each concept uses this exact sub-structure:
 
-### Concept Name
-Definition and explanation (3–4 sentences)
+#### [Concept Name]
+[Definition in 1 sentence.]
+[Explanation of how it works or why it matters — 2–3 sentences.]
 
-## Critical Vocabulary
-Provide exactly 5 terms in this format:
-- **Term** — Definition
+### Critical Vocabulary
+- Exactly 5 terms.
+- Each term must appear on its own line using this format:
+- **[Term]** — [Precise definition in one sentence. No fluff.]
+- Terms must be genuinely important to the topic, not peripheral.
 
-## Practical Analogy
-Explain the concept using a real-world comparison in 4–5 sentences.
+### Practical Analogy
+- Write exactly 4 sentences.
+- Sentence 1: Introduce the real-world comparison ("This works like...").
+- Sentence 2: Map the analogy's components to the topic's components explicitly.
+- Sentence 3: Identify where the analogy holds well.
+- Sentence 4: Identify the analogy's limit (where it breaks down).
+- No bullet points. Prose only.
 
-## Summary Challenge
-One higher-order thinking question requiring reasoning, not recall.
+### Summary Challenge
+- One question only.
+- Must require synthesis or evaluation, not recall.
+- Must not be answerable with a single word or fact.
+- Format: "**Challenge:** [Question]"
+
+BANNED BEHAVIORS:
+- Do not add sections not listed above.
+- Do not use bullet points in Overview or Practical Analogy.
+- Do not write definitions that are circular (using the term to define itself).
+- Do not add a closing note, encouragement, or "further reading" section.
 `;
     }
 
-    const finalPrompt = `
-ROLE: You are the Lead Academic Content Creator for EduFlow.
-
-TOPIC: "${topic}"
-
-${typeSpecificPrompt}
-
-GLOBAL CONSTRAINTS (STRICT):
-1. Output MUST be valid Markdown.
-2. Use ## and ### headers only as defined.
-3. Do NOT add introductions, conclusions, or conversational text.
-4. Do NOT apologize or explain your process.
-5. Do NOT change the required separators or numbering format.
-6. Follow structure EXACTLY — the output will be parsed programmatically.
-`;
-
     // --- STEP 2: CALL AI ---
-    const text = await generateText(finalPrompt);
+
+    const text = await generateText(typeSpecificPrompt);
 
     if (!text) {
       throw new Error("AI failed to return content.");
     }
 
-    // --- STEP 3: SAVE TO DATABASE ---
+    //  SAVE TO DATABASE ---
     const newMaterial = await StudyMaterial.create({
       userId,
       topic,
@@ -174,11 +210,11 @@ GLOBAL CONSTRAINTS (STRICT):
       content: text,
     });
 
-    // --- STEP 4: STREAK LOGIC ---
+    //  STREAK LOGIC ---
     const user = await User.findById(userId);
     if (user) {
       const now = new Date();
-      const lastActivity = user.lastActivity || now;
+      const lastActivity = user.lastActivity ? new Date(user.lastActivity) : now;
       const hoursSinceLastActivity = Math.abs(now - lastActivity) / 36e5;
 
       if (hoursSinceLastActivity > 24 && hoursSinceLastActivity < 48) {
@@ -205,40 +241,5 @@ GLOBAL CONSTRAINTS (STRICT):
       message: "An error occurred while generating study material.",
       error: error.message,
     });
-  }
-};
-
-/**
- * @desc    Get all study history for the logged-in user
- */
-export const getStudyHistory = async (req, res) => {
-  try {
-    const history = await StudyMaterial.find({ userId: req.id }).sort({
-      createdAt: -1,
-    });
-    return res.status(200).json({ success: true, data: history });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to retrieve history." });
-  }
-};
-
-/**
- * @desc    Delete specific study material
- */
-export const deleteStudyMaterial = async (req, res) => {
-  try {
-    const material = await StudyMaterial.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.id,
-    });
-    if (!material)
-      return res.status(404).json({ success: false, message: "Not found." });
-    return res
-      .status(200)
-      .json({ success: true, message: "Deleted successfully" });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Delete failed." });
   }
 };
