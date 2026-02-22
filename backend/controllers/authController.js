@@ -3,7 +3,6 @@ import { User } from "../models/user.js";
 import { generateTokens } from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 
-
 //------------------------------SIGNUP--------------------------------
 
 export const signup = async (req, res) => {
@@ -26,7 +25,9 @@ export const signup = async (req, res) => {
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return res.status(400).json({ success: false, message: "User already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -34,12 +35,12 @@ export const signup = async (req, res) => {
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
-      role: role || "student", 
+      role: role || "student",
     });
 
     // --- NEW: Generate and Set Cookies Immediately ---
     // This ensures the browser receives the 'accessToken' cookie right now
-    await generateTokens(res, newUser._id); 
+    await generateTokens(res, newUser._id);
 
     return res.status(201).json({
       success: true,
@@ -61,7 +62,6 @@ export const signup = async (req, res) => {
     });
   }
 };
-
 
 //------------------------------LOGIN------------------------------------------
 export const login = async (req, res) => {
@@ -146,43 +146,46 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-
 //------------------------------LOGOUT--------------------------------------
 export const logout = async (req, res) => {
-    try {
-        // Clear the cookies by setting their expiration to the past
-        res.clearCookie("accessToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-        });
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-        });
+  try {
+    // Clear the Access Token
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/", // Ensure the path matches exactly
+    });
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Logged out successfully" 
-        });
-    } catch (error) {
-        return res.status(500).json({ 
-            success: false, 
-            message: "Error during logout" 
-        });
-    }
+    // Clear the Refresh Token
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+    });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error during logout" });
+  }
 };
 
 export const checkAuth = async (req, res) => {
-    try {
-        const user = await User.findById(req.id).select("-password"); 
-        if (!user) {
-            return res.status(400).json({ success: false, message: "User not found" });
-        }
-        res.status(200).json({ success: true, user });
-    } catch (error) {
-        console.log("Error in checkAuth ", error);
-        res.status(500).json({ success: false, message: "Server error" });
+  try {
+    const user = await User.findById(req.id).select("-password");
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
     }
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.log("Error in checkAuth ", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };

@@ -50,23 +50,34 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+
       await api.post("/auth/logout");
     } catch (error) {
-      console.error("Logout cleanup failed", error);
+      console.error("Logout API failed, but clearing local session anyway.");
     } finally {
-      // Always clear state and redirect regardless of API success
+
       setUser(null);
       setIsAuthenticated(false);
-      
 
-      window.location.href = "/login";
+
+      localStorage.removeItem("user");
+      window.location.replace("/login");
+
       toast.success("Logged out successfully");
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, isCheckingAuth, login, signup, logout, checkAuth }}
+      value={{
+        user,
+        isAuthenticated,
+        isCheckingAuth,
+        login,
+        signup,
+        logout,
+        checkAuth,
+      }}
     >
       {children}
     </AuthContext.Provider>
