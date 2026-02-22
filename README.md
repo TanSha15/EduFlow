@@ -1,166 +1,109 @@
 
-EduFlow – Intelligent Study Companion
-Live Application:
-https://eduflow-orpy.onrender.com/
+🚀 EduFlow – Intelligent Study Companion
+EduFlow is a next-generation study platform that transforms how students interact with complex topics. By leveraging the Google Gemini API, it generates structured, high-quality study materials in seconds—ranging from deep-dive guides to actionable roadmaps.
 
-EduFlow is a modern study platform built using the MERN stack. It integrates a Large Language Model (Google Gemini API) to dynamically generate structured study materials including guides, quizzes, and learning roadmaps.
+✨ Features
+1. Dynamic Study Material Generation
+Study Guides: Academic, prose-heavy deep dives into any topic.
 
-The platform focuses on clean architecture, secure authentication, content persistence, and an engaging study workflow.
+Interactive Quizzes: 5-question multiple-choice quizzes with progressive difficulty and detailed answer keys.
 
-Features
-Dynamic Study Material Generation
-Structured Study Guides (Markdown formatted)
+Learning Roadmaps: 3-Phase step-by-step guides with actionable checkpoints.
 
-5-question quizzes with answer keys
+Prompt Engineering: Fine-tuned AI responses that strictly follow academic formatting rules.
 
-3-phase learning roadmaps
+2. Secure Authentication & Session Management
+JWT Security: Implementation of Access and Refresh tokens.
 
-Prompt-engineered content generation using Gemini LLM
+HTTP-Only Cookies: Protection against XSS attacks by keeping tokens out of local storage.
 
-Secure Authentication
-JWT-based authentication
+Auth Guarding: Higher-order components for protected routes and automatic redirection.
 
-HTTP-only cookies for secure session handling
+3. Gamification & Persistence
+Study Streaks: Real-time logic that tracks daily activity and encourages habit-building.
 
-Access and refresh token implementation
+Material History: Full CRUD capability—generate, view, and delete your study history.
 
-Protected routes using middleware
-
-Study Streak Tracking
-Tracks daily study consistency
-
-Updates streak based on last activity timestamp
-
-Encourages habit-based learning
-
-History Management
-Stores generated content in MongoDB
-
-Links study materials to individual users
-
-Personal dashboard for content management
-
-Modern UI
-Responsive layout
-
-Dark theme with glass-style aesthetics
-
-Built using Tailwind CSS and Lucide icons
-
-Tech Stack
-Frontend
-React (Vite)
-
-Tailwind CSS
-
-React Router v6
-
-Axios
-
-Lucide React
-
-Backend
-Node.js
-
-Express.js
-
-MongoDB
-
-Mongoose
-
-Google Gemini API (LLM integration)
-
-JWT
-
-Cookie-Parser
-
-Project Structure
-Code
+🏗️ Project Structure
+Plaintext
 
 EduFlow/
 ├── backend/
-│   ├── config/             # Database & Gemini configuration
-│   ├── controllers/        # Auth, User, generation logic
-│   ├── models/             # Mongoose schemas
-│   ├── routes/             # Express route definitions
-│   ├── middleware/         # Authentication & error handling
-│   └── server.js           # Entry point
-│
+│   ├── config/             # DB (MongoDB) & AI (Gemini) configuration
+│   ├── controllers/        # Business logic (AI Generation, Auth, User)
+│   ├── models/             # Mongoose Schemas (User, StudyMaterial)
+│   ├── routes/             # Express Route definitions
+│   ├── middleware/         # Auth verification & Error handling
+│   └── server.js           # Server entry point
 └── frontend/
     ├── src/
-    │   ├── api/            # Axios instance configuration
-    │   ├── components/     # Reusable UI components
-    │   ├── context/        # Global auth state
-    │   └── pages/          # Application pages
-    └── tailwind.config.js
-System Workflow
-User enters a study topic in the frontend.
+    │   ├── api/            # Axios instance with interceptors
+    │   ├── components/     # UI Components (Sidebar, Navbar, Loaders)
+    │   ├── context/        # Auth & UI Context Providers
+    │   └── pages/          # Dashboard, Login, Signup, Contact
+    └── tailwind.config.js  # Styling configuration
+🔄 System Workflow
+The following diagram illustrates how EduFlow processes an AI request securely:
 
-Backend verifies authentication using HTTP-only cookies.
+Frontend: User submits a topic and selects a content type (Quiz/Roadmap/Guide).
 
-Server constructs a structured prompt.
+Middleware: The server validates the user's JWT from an HTTP-only cookie.
 
-Prompt is sent to Gemini LLM.
+Controller: The backend builds a dynamic prompt and sends it to the Gemini API.
 
-Generated Markdown content is stored in MongoDB.
+Database: The generated content is stored in MongoDB linked to the user's profile.
 
-Study streak is updated based on user activity.
+Gamification: The system updates the user's streak and lastActivity timestamp.
 
-Frontend renders formatted study material dynamically.
+Response: The UI receives the data and renders the Markdown content using a polished, responsive layout.
 
-Getting Started (Local Setup)
-Prerequisites
-Node.js installed
+🛠️ Tech Stack
+Layer	Technology
+Frontend	React (Vite), Tailwind CSS, Lucide Icons, React Router 6
+Backend	Node.js, Express.js
+Database	MongoDB (Mongoose ODM)
+AI Integration	Google Gemini 1.5 Flash
+Auth	JWT (JSON Web Tokens), Cookie-Parser
 
-MongoDB Atlas account
+Export to Sheets
 
-Google AI Studio API key
-
-Installation
+🚀 Getting Started
+1. Clone & Install
 Bash
 
-# Clone the repository
 git clone https://github.com/TanSha15/EduFlow.git
+cd EduFlow
 
-# Install backend dependencies
-cd backend
-npm install
+# Install Backend
+cd backend && npm install
 
-# Install frontend dependencies
-cd ../frontend
-npm install
-Environment Variables
-Create a .env file inside the backend directory:
+# Install Frontend
+cd ../frontend && npm install
+2. Environment Setup
+Create a .env file in the /backend directory:
 
-Code
+Code snippet
 
 PORT=5000
-MONGO_URI=your_mongodb_atlas_uri
-JWT_ACCESS_SECRET=your_access_secret
+MONGO_URI=your_mongodb_atlas_url
+JWT_ACCESS_SECRET=your_secret
 JWT_REFRESH_SECRET=your_refresh_secret
-GEMINI_API_KEY=your_google_gemini_key
+GEMINI_API_KEY=your_google_ai_key
 CLIENT_URL=http://localhost:5173
 NODE_ENV=development
-Deployment
-The project is deployed on Render:
+3. Run the App
+Bash
 
-Frontend: Hosted as a Static Site with rewrite rule (/* → /index.html)
+# In backend/
+npm run dev
 
-Backend: Hosted as a Web Service with environment variables configured
+# In frontend/
+npm run dev
+🌐 Deployment
+This project is currently deployed on Render.
 
-Automatic CI/CD via GitHub integration
+Backend: Web Service (Node.js)
 
-Key Implementation Highlights
-Structured prompt engineering for consistent output
+Frontend: Static Site (Vite)
 
-Cookie-based authentication for improved security
-
-Streak tracking logic using timestamp comparison
-
-Clean separation of concerns (controllers, routes, middleware)
-
-Centralized Axios configuration on frontend
-
-Author
-Tanish Sharma
-MERN Stack Developer
+Database: MongoDB Atlas
